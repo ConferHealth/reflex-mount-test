@@ -14,7 +14,7 @@ import Data.Functor.Misc (ComposeMaybe(ComposeMaybe), Const2(Const2))
 import Data.Monoid ((<>))
 import Data.Some (Some(This))
 import Data.Text (Text, pack)
-import Language.Javascript.JSaddle (eval, jsf, jsg, liftJSM)
+import Language.Javascript.JSaddle (eval, jsf, jsg, MonadJSM, liftJSM)
 import Reflex.Dom -- sorry!
 import Reflex.Patch.DMapWithMove
   ( PatchDMapWithMove(PatchDMapWithMove), NodeInfo(NodeInfo), From(From_Insert, From_Delete, From_Move)
@@ -23,13 +23,16 @@ import Reflex.Patch.DMapWithMove
 appMain :: IO ()
 appMain = mainWidget appWidget
 
+logIt :: (Show a, MonadJSM m) => String -> a -> m ()
+logIt prefix a =
+  liftJSM $ do
+    void $ jsg ("console" :: Text) ^. jsf ("log" :: Text) (pack $ prefix <> ": " <> show a)
+    void $ eval ("console.log(document.children[0].children[1].innerHTML)" :: Text)
+
 dumpMount :: forall t m. MonadWidget t m => String -> m ()
 dumpMount prefix = do
   mses <- updated <$> getMountStatus
-  performEvent_ . ffor mses $ \ ms ->
-    liftJSM $ do
-      void $ jsg ("console" :: Text) ^. jsf ("log" :: Text) (pack $ prefix <> ": " <> show ms)
-      void $ eval ("console.log(document.children[0].children[1].innerHTML)" :: Text)
+  performEvent_ $ logIt prefix <$> mses
 
 appWidget :: forall t m. MonadWidget t m => m ()
 appWidget = do
@@ -51,26 +54,37 @@ appWidget = do
 
 simpleDyn :: forall t m. MonadWidget t m => m ()
 simpleDyn = do
-  b <- toggle False =<< button "dyn a thing!"
+  b <- toggle True =<< button "dyn a thing!"
 
   switched <- dyn $ ffor b $ \ case
     True -> do
-      text "yo I am a dyn"
+      text "yo I am dyn True"
       dumpMount "dyn True"
       Left . fmap Just <$> getMountStatus
 
     False -> do
-      text "yo I am another dyn"
-      dumpMount "dyn False"
-      Right . fmap Just <$> getMountStatus
+      text "yo I am dyn False"
+      pb <- getPostBuild
+      ms <- getMountStatus
+      performEvent_ $ logIt "dyn False postBuild" <$> tag (current ms) pb
+      performEvent_ $ logIt "dyn False" <$> updated ms
+      pbDyn <- holdDyn notReady . ffor pb $ \ _ -> do
+        text "post build"
+        dumpMount "dyn False pb block"
+      void $ dyn pbDyn
+      delayedPb <- delay 5 pb
+      delayDyn <- holdDyn notReady . ffor delayedPb $ \ _ -> do
+        text "delayed"
+        dumpMount "dyn False delay block"
+      void $ dyn delayDyn
+
+      pure . Right $ Just <$> ms
 
   tmes :: Dynamic t (Maybe MountState) <- fmap join . holdDyn (constDyn Nothing) . fmapMaybe (preview _Left) $ switched
   fmes :: Dynamic t (Maybe MountState) <- fmap join . holdDyn (constDyn Nothing) . fmapMaybe (preview _Right) $ switched
 
-  performEvent_ . ffor (updated tmes) $ \ tms ->
-    liftJSM $ void $ jsg ("console" :: Text) ^. jsf ("log" :: Text) ("at root, dyn True = " <> (pack . show) tms)
-  performEvent_ . ffor (updated fmes) $ \ fms ->
-    liftJSM $ void $ jsg ("console" :: Text) ^. jsf ("log" :: Text) ("at root, dyn False = " <> (pack . show) fms)
+  performEvent_ $ logIt "at root, dyn True" <$> updated tmes
+  performEvent_ $ logIt "at root, dyn False" <$> updated fmes
 
 type DMK = Const2 Int Text
 type DMP = PatchDMap DMK Identity
