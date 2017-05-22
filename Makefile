@@ -1,11 +1,11 @@
 
 .PHONY: build build-fast update-build myawesomeclient.cabal
 
-build: update-build
-	nix-shell --run 'cabal configure --ghcjs && cabal build'
-
 build-fast:
-	nix-shell --run 'cabal build'
+	nix-shell -A ghc --run 'cabal build'
+
+build: update-build
+	nix-shell -A ghcjs --run 'cabal configure --ghcjs && cabal build'
 
 update-build: package.nix
 

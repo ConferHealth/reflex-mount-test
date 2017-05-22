@@ -17,12 +17,17 @@ cabal-version:  >= 1.10
 library
   hs-source-dirs:
       src
-  default-extensions: DataKinds DeriveGeneric DeriveLift FlexibleContexts FlexibleInstances FunctionalDependencies GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NamedFieldPuns NoImplicitPrelude OverloadedStrings PatternSynonyms RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators
-  ghc-options: -Wall -Werror -funbox-strict-fields -O2
+  default-extensions: DataKinds DeriveGeneric DeriveLift FlexibleContexts FlexibleInstances FunctionalDependencies GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings PatternSynonyms RecordWildCards RecursiveDo ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators
+  ghc-options: -Wall -funbox-strict-fields -O2
   build-depends:
       base
-    , classy-prelude
+    , dependent-map
+    , dependent-sum
+    , jsaddle
+    , lens
+    , reflex
     , reflex-dom
+    , text
   exposed-modules:
       App
   default-language: Haskell2010
@@ -31,11 +36,16 @@ executable myawesomeclient-exe
   main-is: Main.hs
   hs-source-dirs:
       app
-  default-extensions: DataKinds DeriveGeneric DeriveLift FlexibleContexts FlexibleInstances FunctionalDependencies GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NamedFieldPuns NoImplicitPrelude OverloadedStrings PatternSynonyms RecordWildCards ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators
-  ghc-options: -Wall -Werror -funbox-strict-fields -O2 -threaded -rtsopts -with-rtsopts=-N
+  default-extensions: DataKinds DeriveGeneric DeriveLift FlexibleContexts FlexibleInstances FunctionalDependencies GADTs GeneralizedNewtypeDeriving LambdaCase MultiParamTypeClasses NamedFieldPuns OverloadedStrings PatternSynonyms RecordWildCards RecursiveDo ScopedTypeVariables StandaloneDeriving TemplateHaskell TypeApplications TypeFamilies TypeOperators
+  ghc-options: -Wall -funbox-strict-fields -O2 -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base
-    , classy-prelude
+    , dependent-map
+    , dependent-sum
+    , jsaddle
+    , lens
+    , reflex
     , reflex-dom
+    , text
     , myawesomeclient
   default-language: Haskell2010

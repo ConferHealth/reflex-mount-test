@@ -15,14 +15,15 @@ default-extensions:
   - FlexibleContexts
   - FlexibleInstances
   - FunctionalDependencies
+  - GADTs
   - GeneralizedNewtypeDeriving
   - LambdaCase
   - MultiParamTypeClasses
   - NamedFieldPuns
-  - NoImplicitPrelude
   - OverloadedStrings
   - PatternSynonyms
   - RecordWildCards
+  - RecursiveDo
   - ScopedTypeVariables
   - StandaloneDeriving
   - TemplateHaskell
@@ -32,12 +33,16 @@ default-extensions:
 
 dependencies:
   - base
-  - classy-prelude
+  - dependent-map
+  - dependent-sum
+  - jsaddle
+  - lens
+  - reflex
   - reflex-dom
+  - text
 
 ghc-options:
   - -Wall
-  - -Werror
   - -funbox-strict-fields
   - -O2
 
